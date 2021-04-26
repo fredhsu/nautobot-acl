@@ -78,7 +78,7 @@ func TestAppendAndRemoveAction(t *testing.T) {
 	oldAction := test1.Actions[oldHigh]
 	newAction := "permit ip host 10.1.2.3 172.22.22.0/24"
 	test1.AppendAction(newAction)
-	if test1.GetHighestSeq() != oldHigh+ACL_INCREMENT {
+	if test1.GetActionSeq(newAction) != oldHigh {
 		t.Errorf("After append the highest sequence should be: %d, but got %d", oldHigh+ACL_INCREMENT, test1.GetHighestSeq())
 	}
 	if test1.Actions[test1.GetHighestSeq()] != oldAction {
@@ -100,9 +100,27 @@ func TestAppendAndRemoveAction(t *testing.T) {
 	if test1.Actions[test1.GetHighestSeq()] != newAction2 {
 		t.Errorf("After append the last entry should be %s, but is %s", newAction2, test1.Actions[test1.GetHighestSeq()])
 	}
-
+	// Test appending an already existing action
+	dupAction := "deny ip any host 195.206.105.217"
+	s := test1.AppendAction(dupAction)
+	if s != 20 {
+		t.Errorf("Append did not return the correct sequence number: %d", s)
+	}
+	// Test removing a non-existant seq
+	err = test1.RemoveAction(15)
+	if err == nil {
+		t.Errorf("Removing a non-existant seqencue should return an error but didn't")
+	}
 }
 
+func TestContainsAction(t *testing.T) {
+	if aclExample.ContainsAction("deny ip 10.1.2.0/24 10.2.3.0/24") {
+		t.Error("Contains returns true when action doesn't exist")
+	}
+	if !aclExample.ContainsAction("permit ip any host 89.234.157.254") {
+		t.Error("Contains does not detect action that exists")
+	}
+}
 func TestGenerateAVD(t *testing.T) {
 
 }

@@ -3,6 +3,7 @@ package data
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,6 +41,7 @@ func NewACLFromCLI(scanner *bufio.Scanner) ACL {
 		line := strings.Fields(ace)
 		rest := strings.TrimPrefix(ace, line[0]+" ")
 		seq, err := strconv.Atoi(line[0])
+		// TODO move this to returning an error
 		if err != nil {
 			panic(err)
 		}
@@ -75,18 +77,41 @@ func (acl *ACL) GetLowestSeq() int {
 	}
 	return min
 }
+func (acl *ACL) GetActionSeq(action string) int {
+	for k, v := range acl.Actions {
+		if v == action {
+			return k
+		}
+	}
+	return -1
+}
 
-func (acl *ACL) AppendAction(action string) {
+func (acl *ACL) ContainsAction(action string) bool {
+	return acl.GetActionSeq(action) > 0
+}
+
+func (acl *ACL) PrependAction(action string) {
+	// TODO add a new action to the front of the list
+}
+
+func (acl *ACL) AppendAction(action string) int {
+	if i := acl.GetActionSeq(action); i > 0 {
+		log.Printf("Action already exists")
+		return i
+	}
 	newHigh := acl.GetHighestSeq() + ACL_INCREMENT
 	// Check if hitting any any at the end, if so then increment and append
 	// with sequence increased by 10
 	if strings.Contains(acl.Actions[acl.GetHighestSeq()], "any any") {
-		tmp := acl.Actions[acl.GetHighestSeq()]
-		acl.Actions[acl.GetHighestSeq()] = action
+		oldHigh := acl.GetHighestSeq()
+		tmp := acl.Actions[oldHigh]
+		acl.Actions[oldHigh] = action
 		acl.Actions[newHigh] = tmp
+		return oldHigh
 	} else {
 		// Otherwise just append
 		acl.Actions[newHigh] = action
+		return newHigh
 	}
 }
 
