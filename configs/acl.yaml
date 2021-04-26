@@ -1,0 +1,11 @@
+standard_access_lists:
+  demo:
+    sequence_numbers:
+      10:
+        action: "deny ip any host 178.165.72.177"
+      < sequence_id_2 >:
+        action: "< action as string >"
+  < access_list_name_2 >:
+    sequence_numbers:
+      < sequence_id_1 >:
+        action: "< action as string >"
