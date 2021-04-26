@@ -66,6 +66,15 @@ func (acl *ACL) GetHighestSeq() int {
 	}
 	return max
 }
+func (acl *ACL) GetLowestSeq() int {
+	min := acl.GetHighestSeq()
+	for k := range acl.Actions {
+		if k < min {
+			min = k
+		}
+	}
+	return min
+}
 
 func (acl *ACL) AppendAction(action string) {
 	newHigh := acl.GetHighestSeq() + ACL_INCREMENT
@@ -80,6 +89,16 @@ func (acl *ACL) AppendAction(action string) {
 		acl.Actions[newHigh] = action
 	}
 }
+
+func (acl *ACL) RemoveAction(seq int) error {
+	if _, ok := acl.Actions[seq]; ok {
+		delete(acl.Actions, seq)
+		return nil
+	} else {
+		return fmt.Errorf("Sequence number %d not found", seq)
+	}
+}
+
 func (acl *ACL) GenerateAVD() string {
 	m := make(map[interface{}]interface{})
 	action := make(map[string]string)

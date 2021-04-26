@@ -14,6 +14,7 @@ var cliExample = `ip access-list demo
 `
 
 var highestSeq = 180
+var lowestSeq = 10
 
 var aclExample = ACL{
 	Name: "demo",
@@ -47,10 +48,14 @@ func TestNewACLFromCLI(t *testing.T) {
 	}
 }
 
-func TestGetHighestSeq(t *testing.T) {
+func TestGetHighestAndLowestSeq(t *testing.T) {
 	seq := aclExample.GetHighestSeq()
 	if seq != highestSeq {
 		t.Errorf("Highest seq was : %d, but should have been %d", seq, highestSeq)
+	}
+	seq = aclExample.GetLowestSeq()
+	if seq != lowestSeq {
+		t.Errorf("Lowest seq was : %d, but should have been %d", seq, lowestSeq)
 	}
 }
 
@@ -66,7 +71,7 @@ func TestCopy(t *testing.T) {
 	}
 }
 
-func TestAppendAction(t *testing.T) {
+func TestAppendAndRemoveAction(t *testing.T) {
 	// test1 assumes an 'any any' entry at the end
 	test1 := aclExample.Copy()
 	oldHigh := test1.GetHighestSeq()
@@ -84,7 +89,10 @@ func TestAppendAction(t *testing.T) {
 	}
 	// Now remove any any and append
 	newAction2 := "deny ip 10.1.1.0/24 10.1.2.0/24"
-	delete(test1.Actions, test1.GetHighestSeq())
+	err := test1.RemoveAction(test1.GetHighestSeq())
+	if err != nil {
+		t.Error(err)
+	}
 	test1.AppendAction(newAction2)
 	if test1.GetHighestSeq() != oldHigh+ACL_INCREMENT {
 		t.Errorf("After append the highest sequence should be: %d, but got %d", oldHigh+ACL_INCREMENT, test1.GetHighestSeq())
