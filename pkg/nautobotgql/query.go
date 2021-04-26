@@ -67,14 +67,16 @@ func (n *NautobotServer) RunQuery(query Query) Response {
 }
 
 func (n *NautobotServer) QueryIPAddresses(tag string) []ndata.IPAddressType {
-	query := Query{Query: `query { ip_addresses(tag:"` + tag + `"){address}}`}
+	query := Query{Query: `query { ip_addresses(tag:"` + tag + `"){address dns_name}}`}
 	data := n.RunQuery(query)
 	foo := data.Data["ip_addresses"].([]interface{})
 	ips := make([]ndata.IPAddressType, len(foo))
 	for i, v := range foo {
 		tmp := v.(map[string]interface{})
-		addr := tmp["address"].(string)
-		ip := ndata.IPAddressType{Address: addr}
+		ip := ndata.IPAddressType{
+			Address: tmp["address"].(string),
+			DNSName: tmp["dns_name"].(string),
+		}
 		ips[i] = ip
 	}
 	return ips

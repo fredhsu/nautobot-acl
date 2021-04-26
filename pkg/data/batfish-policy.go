@@ -1,7 +1,7 @@
 package data
 
 type BatfishPolicy struct {
-	Permit []BatfishEntry
+	Permit []BatfishEntry `json:"permit"`
 }
 
 type BatfishEntry struct {

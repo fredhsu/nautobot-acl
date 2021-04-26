@@ -2,22 +2,16 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
 	ndata "github.com/fredhsu/nautobot-buildacl/pkg/data"
 	ngql "github.com/fredhsu/nautobot-buildacl/pkg/nautobotgql"
 )
-
-type Query struct {
-	Query string `json:"query"`
-}
-
-type Response struct {
-	Data map[string]interface{} `json:"data"`
-}
 
 var token, tag, server string
 
@@ -39,10 +33,24 @@ func main() {
 
 	}
 	scanner := bufio.NewScanner(file)
-	// scanner.Split(bufio.ScanLines)
 	acl := ndata.NewACLFromCLI(scanner)
 	fmt.Println(acl)
 	cliacl := acl.GenerateCLI()
 	fmt.Println(cliacl)
-	acl.GenerateAVD()
+	bfp := ndata.BatfishPolicy{}
+	for _, ip := range ips {
+		bfp.AppendPermit(ndata.BatfishEntry{
+			Name:        ip.DNSName,
+			DstIPs:      ip.Address,
+			IPProtocols: []string{"tcp"},
+			// DstPorts:    []string{"80"},
+		})
+		acl.AppendAction(ip.GenerateIPFromAny("permit"))
+	}
+	json, err := json.MarshalIndent(bfp, "", "  ")
+	err = ioutil.WriteFile("../../configs/permit2.json", json, 0644)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+	}
+	fmt.Println(acl.GenerateCLI())
 }
