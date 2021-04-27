@@ -1,0 +1,1 @@
+getips -token f6df868dfa674ff1d5fdfaac169eda87a55d2d93 -server nautobot.sjc.aristanetworks.com -tag critical -bfout configs/permit2.json -cliout configs/acls.eos

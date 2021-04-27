@@ -1,19 +1,5 @@
 ip access-list demo
-   10 deny ip any host 178.165.72.177
-   20 deny ip any host 195.206.105.217
-   30 deny ip any host 89.234.157.254
-   40 deny ip any host 46.165.230.5
-   50 deny ip any host 192.42.116.16
-   60 deny ip any host 171.25.193.78
-   70 deny ip any host 144.217.255.89
-   80 deny ip any host 62.210.105.116
-   90 deny ip any host 162.247.74.74
-   100 deny ip any host 185.107.47.171
-   110 deny ip any host 18.27.197.252
-   120 deny ip any host 46.165.245.154
-   130 deny ip any host 185.220.102.8
-   140 deny ip any host 77.247.181.162
-   150 deny ip any host 171.25.193.235
-   160 deny ip any host 158.174.122.199 
-   170 deny ip any host 158.175.122.199 
-   180 permit ip any any
+   10 permit ip any host 8.8.8.4
+   20 permit ip any host 8.8.8.8
+   30 permit ip any 172.22.22.10/24
+   40 permit ip any 172.22.22.40/24
