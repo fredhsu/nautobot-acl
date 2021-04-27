@@ -28,6 +28,10 @@ type ACLAction struct {
 	Action string
 }
 
+func NewACL(name string) ACL {
+	return ACL{Name: name, Actions: make(map[int]string)}
+}
+
 func NewACLFromCLI(scanner *bufio.Scanner) ACL {
 	scanner.Scan()
 	aclTitle := scanner.Text()
