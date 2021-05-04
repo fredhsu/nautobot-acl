@@ -1,4 +1,4 @@
-package data
+package nautobot
 
 type Webhook struct {
 	Event       string      `json:"event"`

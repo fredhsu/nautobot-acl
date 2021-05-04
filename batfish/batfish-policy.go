@@ -3,7 +3,7 @@ package batfish
 import (
 	"encoding/json"
 
-	ndata "github.com/fredhsu/nautobot-buildacl/pkg/data"
+	"github.com/fredhsu/nautobot-buildacl/ipaddress"
 )
 
 type BatfishPolicy struct {
@@ -21,7 +21,7 @@ func (b *BatfishPolicy) AppendPermit(entry BatfishEntry) {
 	b.Permit = append(b.Permit, entry)
 }
 
-func NewFromIPs(ips []ndata.IPAddressType) BatfishPolicy {
+func NewFromIPs(ips []ipaddress.IPAddressType) BatfishPolicy {
 	bfp := BatfishPolicy{}
 	for _, ip := range ips {
 		bfp.AppendPermit(BatfishEntry{

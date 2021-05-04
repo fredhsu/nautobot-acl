@@ -1,4 +1,4 @@
-package nautobotgql
+package nautobot
 
 import (
 	"bytes"

@@ -11,12 +11,12 @@ import (
 
 	"github.com/fredhsu/nautobot-buildacl/acl"
 	"github.com/fredhsu/nautobot-buildacl/batfish"
+	"github.com/fredhsu/nautobot-buildacl/gitlab"
 	"github.com/fredhsu/nautobot-buildacl/ipaddress"
-	ndata "github.com/fredhsu/nautobot-buildacl/pkg/data"
-	ngql "github.com/fredhsu/nautobot-buildacl/pkg/nautobotgql"
+	"github.com/fredhsu/nautobot-buildacl/nautobot"
 )
 
-var token, tag, server, bfout, cliout, projectID, branch, gitlab string
+var token, tag, server, bfout, cliout, projectID, branch, gitlabHost, bfpath, clipath string
 
 func init() {
 	flag.StringVar(&token, "token", "", "API token")
@@ -24,23 +24,26 @@ func init() {
 	flag.StringVar(&server, "server", "", "Nautobot server")
 	flag.StringVar(&bfout, "bfout", "", "Output file for Batfish policy")
 	flag.StringVar(&cliout, "cliout", "", "Output file for ACL CLI")
+	flag.StringVar(&bfpath, "bfpath", "", "Repo file for Batfish policy")
+	flag.StringVar(&clipath, "clipath", "", "Repo file for ACL CLI")
 	flag.StringVar(&projectID, "projectid", "", "Project ID for Gitlab")
 	flag.StringVar(&branch, "branch", "", "Branch for Gitlab")
-	flag.StringVar(&gitlab, "gitlab", "", "Gitlab server")
+	flag.StringVar(&gitlabHost, "gitlab", "", "Gitlab server")
 }
 
 func WebhookHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var wh ndata.Webhook
+	var wh nautobot.Webhook
 	err := decoder.Decode(&wh)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(wh.Data)
-	ns := ngql.NewNautobotServer(false, server, token)
+	log.Printf("Received webhook: \n %+v\n", wh.Data)
+
+	ns := nautobot.NewNautobotServer(false, server, token)
 
 	ips := ns.QueryIPAddresses(tag)
 	acl := acl.NewPermitACLFromIPs("demo", ips)
@@ -52,15 +55,33 @@ func WebhookHandler(w http.ResponseWriter, r *http.Request) {
 	if cliout != "" {
 		writeACL(acl, ips)
 	}
-	if gitlab != "" {
-		commitFiles(bfp.ToJSONString(), bfFilePath, cli, cliFilePath)
+	if gitlabHost != "" {
+		log.Printf("Commiting changes to gitlab")
+		gl := gitlab.Gitlab{
+			Host:    gitlabHost,
+			Project: projectID,
+			Branch:  branch,
+			Token:   token,
+		}
+		bfAction := gitlab.CommitAction{
+			Action:   "update",
+			FilePath: bfpath,
+			Content:  bfp.ToJSONString(),
+		}
+		cliAction := gitlab.CommitAction{
+			Action:   "update",
+			FilePath: clipath,
+			Content:  cli,
+		}
+		actions := []gitlab.CommitAction{bfAction, cliAction}
+
+		gl.CommitFiles(actions, "Nautobot IP change")
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{"message": "post called"}`))
 }
 
-// TODO get string of cli back
 func writeACL(acl acl.ACL, ips []ipaddress.IPAddressType) {
 	f, err := os.Create(cliout)
 	if err != nil {
@@ -73,7 +94,6 @@ func writeACL(acl acl.ACL, ips []ipaddress.IPAddressType) {
 	fmt.Printf("wrote ACL to file %s\n", cliout)
 }
 
-// TODO get string of bfp back
 func writeBF(acl acl.ACL, ips []ipaddress.IPAddressType) {
 	bfp := batfish.BatfishPolicy{}
 	for _, ip := range ips {
@@ -97,42 +117,6 @@ func writeBF(acl acl.ACL, ips []ipaddress.IPAddressType) {
 	fmt.Printf("Wrote Batfish to file %s\n", bfout)
 }
 
-func commitFiles(bfp, bfFilePath, cli, cliFilePath string) {
-	commit := ndata.Commit{
-		ID:            projectID,
-		Branch:        branch,
-		CommitMessage: "Nautobot IP Changed",
-	}
-	actions := []ndata.CommitAction{}
-	if bfFilePath != "" {
-		actions = append(actions, ndata.CommitAction{
-			Action:   "update",
-			FilePath: bfFilePath,
-			Content:  bfp,
-		})
-	}
-	if cliFilePath != "" {
-		actions = append(actions, ndata.CommitAction{
-			Action:   "update",
-			FilePath: cliFilePath,
-			Content:  cli,
-		})
-	}
-	commit.Actions = actions
-	gitlabURL := "http://" + gitlab + "/api/v4/projects/" + projectID + "/repository/commits"
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", gitlabURL, nil)
-	req.Header.Add("PRIVATE-TOKEN", token)
-	req.Header.Add("Content-Type", "application/json")
-	if err != nil {
-		panic(err)
-	}
-	_, err = client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func main() {
 	flag.Parse()
 
@@ -141,5 +125,4 @@ func main() {
 	fmt.Printf("Starting webhook receiver - nautobot server %s, token %s\n", server, token)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
-	// fmt.Println(acl.GenerateCLI())
 }
