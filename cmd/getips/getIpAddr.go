@@ -16,7 +16,7 @@ import (
 	"github.com/fredhsu/nautobot-buildacl/nautobot"
 )
 
-var token, tag, server, bfout, cliout, projectID, branch, gitlabHost, bfpath, clipath string
+var gitlabtoken, token, tag, server, bfout, cliout, projectID, branch, gitlabHost, bfpath, clipath string
 
 func init() {
 	flag.StringVar(&token, "token", "", "API token")
@@ -29,6 +29,7 @@ func init() {
 	flag.StringVar(&projectID, "projectid", "", "Project ID for Gitlab")
 	flag.StringVar(&branch, "branch", "", "Branch for Gitlab")
 	flag.StringVar(&gitlabHost, "gitlab", "", "Gitlab server")
+	flag.StringVar(&gitlabtoken, "gitlabtoken", "", "Gitlab token")
 }
 
 func WebhookHandler(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +62,7 @@ func WebhookHandler(w http.ResponseWriter, r *http.Request) {
 			Host:    gitlabHost,
 			Project: projectID,
 			Branch:  branch,
-			Token:   token,
+			Token:   gitlabtoken,
 		}
 		bfAction := gitlab.CommitAction{
 			Action:   "update",

@@ -3,27 +3,29 @@ package gitlab
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"log"
 	"net/http"
 )
 
 type Gitlab struct {
-	Host    string
-	Project string
-	Branch  string
-	Token   string
+	Host    string `json:"host"`
+	Project string `json:"project"`
+	Branch  string `json:"branch"`
+	Token   string `json:"token"`
 }
 
 type Commit struct {
-	ID            string
-	Branch        string
-	CommitMessage string
-	Actions       []CommitAction
+	ID            string         `json:"id"`
+	Branch        string         `json:"branch"`
+	CommitMessage string         `json:"commit_message"`
+	Actions       []CommitAction `json:"actions"`
 }
 
 type CommitAction struct {
-	Action   string
-	FilePath string
-	Content  string
+	Action   string `json:"action"`
+	FilePath string `json:"file_path"`
+	Content  string `json:"content"`
 }
 
 func (g *Gitlab) CommitFiles(actions []CommitAction, message string) error {
@@ -33,6 +35,7 @@ func (g *Gitlab) CommitFiles(actions []CommitAction, message string) error {
 		CommitMessage: message,
 		Actions:       actions,
 	}
+	log.Printf("Commiting: %+v", commit)
 	json, err := json.Marshal(commit)
 	if err != nil {
 		return err
@@ -47,9 +50,12 @@ func (g *Gitlab) CommitFiles(actions []CommitAction, message string) error {
 	if err != nil {
 		return err
 	}
-	_, err = client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+	responseBody, err := io.ReadAll(resp.Body)
+	log.Printf("Commit response:\n %s", responseBody)
 	return nil
 }
