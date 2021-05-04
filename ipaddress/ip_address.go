@@ -1,4 +1,4 @@
-package data
+package ipaddress
 
 import "strings"
 

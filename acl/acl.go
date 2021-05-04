@@ -1,4 +1,4 @@
-package data
+package acl
 
 import (
 	"bufio"
@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/fredhsu/nautobot-buildacl/ipaddress"
 )
 
 const ACL_INCREMENT = 10
@@ -30,6 +32,14 @@ type ACLAction struct {
 
 func NewACL(name string) ACL {
 	return ACL{Name: name, Actions: make(map[int]string)}
+}
+
+func NewPermitACLFromIPs(name string, ips []ipaddress.IPAddressType) ACL {
+	acl := NewACL(name)
+	for _, ip := range ips {
+		acl.AppendAction(ip.GenerateIPFromAny("permit"))
+	}
+	return acl
 }
 
 func NewACLFromCLI(scanner *bufio.Scanner) ACL {

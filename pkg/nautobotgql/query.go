@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	ndata "github.com/fredhsu/nautobot-buildacl/pkg/data"
+	"github.com/fredhsu/nautobot-buildacl/ipaddress"
 )
 
 type Query struct {
@@ -66,14 +66,14 @@ func (n *NautobotServer) RunQuery(query Query) Response {
 	return data
 }
 
-func (n *NautobotServer) QueryIPAddresses(tag string) []ndata.IPAddressType {
+func (n *NautobotServer) QueryIPAddresses(tag string) []ipaddress.IPAddressType {
 	query := Query{Query: `query { ip_addresses(tag:"` + tag + `"){address dns_name}}`}
 	data := n.RunQuery(query)
 	foo := data.Data["ip_addresses"].([]interface{})
-	ips := make([]ndata.IPAddressType, len(foo))
+	ips := make([]ipaddress.IPAddressType, len(foo))
 	for i, v := range foo {
 		tmp := v.(map[string]interface{})
-		ip := ndata.IPAddressType{
+		ip := ipaddress.IPAddressType{
 			Address: tmp["address"].(string),
 			DNSName: tmp["dns_name"].(string),
 		}

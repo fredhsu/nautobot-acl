@@ -2,6 +2,14 @@
   "permit": [
     {
       "name": "",
+      "dstIps": "1.1.1.2/32",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "",
       "dstIps": "8.8.8.4/32",
       "ipProtocols": [
         "tcp"
@@ -11,6 +19,54 @@
     {
       "name": "",
       "dstIps": "8.8.8.8/32",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "",
+      "dstIps": "10.90.226.1/24",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "dmz-deb-3",
+      "dstIps": "10.90.226.72/24",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "dmz-deb-4",
+      "dstIps": "10.90.226.73/24",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "",
+      "dstIps": "10.90.226.74/24",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "r3-esx-135",
+      "dstIps": "10.90.226.135/24",
+      "ipProtocols": [
+        "tcp"
+      ],
+      "dstPorts": null
+    },
+    {
+      "name": "",
+      "dstIps": "10.90.226.136/24",
       "ipProtocols": [
         "tcp"
       ],

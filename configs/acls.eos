@@ -1,5 +1,12 @@
 ip access-list demo
-   10 permit ip any host 8.8.8.4
-   20 permit ip any host 8.8.8.8
-   30 permit ip any 172.22.22.10/24
-   40 permit ip any 172.22.22.40/24
+   10 permit ip any host 1.1.1.2
+   20 permit ip any host 8.8.8.4
+   30 permit ip any host 8.8.8.8
+   40 permit ip any 10.90.226.1/24
+   50 permit ip any 10.90.226.72/24
+   60 permit ip any 10.90.226.73/24
+   70 permit ip any 10.90.226.74/24
+   80 permit ip any 10.90.226.135/24
+   90 permit ip any 10.90.226.136/24
+   100 permit ip any 172.22.22.10/24
+   110 permit ip any 172.22.22.40/24
